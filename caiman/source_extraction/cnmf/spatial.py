@@ -319,6 +319,7 @@ def update_spatial_components(Y, C=None, f=None, A_in=None, sn=None, dims=None, 
     ff = np.where(np.sum(A_, axis=0) == 0)           # remove empty components
     if np.size(ff) > 0:
         ff = ff[0]
+        ff = np.delete(ff,np.where(ff == A_.shape[1]-1))
         print('eliminating empty components!!')
         nr = nr - len(ff)
         A_ = np.delete(A_, list(ff), 1)
