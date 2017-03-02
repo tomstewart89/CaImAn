@@ -1087,6 +1087,11 @@ def load(file_name,fr=30,start_time=0,meta_data=None,subindices=None,shape=None,
                 input_arr = imread(file_name)[subindices, :, :]
             else:
                 input_arr = imread(file_name)
+
+            # our data is reading in strangely - every second timestep is stored as a different color channel. This hack fixes that
+            if len(input_arr.shape) > 3:
+                input_arr = input_arr.reshape(np.prod(input_arr.shape[0:2]),input_arr.shape[2],input_arr.shape[3])
+
             input_arr = np.squeeze(input_arr)
 
 
