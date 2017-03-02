@@ -216,9 +216,7 @@ def run_CNMF_patches(file_name, shape, options, rf=16, stride = 4, gnb = 1, dvie
 
         except:
             print('Something went wrong') 
-            e = sys.exc_info()[0]
-            print(e) 
-            raise
+            print(sys.exc_info()[0])
 
     else:
 
