@@ -18,7 +18,7 @@ from caiman.base.rois import com
 import pylab as pl
 import psutil
 #%%
-def CNMFSetParms(Y, n_processes, K=30, gSig=[5, 5], ssub=2, tsub=2, p=2, p_ssub=2, p_tsub=2, thr=0.8, method_init= 'greedy_roi', nb = 1, n_pixels_per_process = 1000, block_size = 1000, check_nan = True, **kwargs):
+def CNMFSetParms(Y, n_processes, K=30, gSig=[5, 5], ssub=2, tsub=2, nIter_patch=2, p=2, p_ssub=2, p_tsub=2, thr=0.8, method_init= 'greedy_roi', nb = 1, n_pixels_per_process = 1000, block_size = 1000, check_nan = True, **kwargs):
     """Dictionary for setting the CNMF parameters.
     Any parameter that is not set get a default value specified
     by the dictionary default options
@@ -48,7 +48,8 @@ def CNMFSetParms(Y, n_processes, K=30, gSig=[5, 5], ssub=2, tsub=2, p=2, p_ssub=
     options['patch_params'] = {
         'ssub': p_ssub,             # spatial downsampling factor
         'tsub': p_tsub,              # temporal downsampling factor
-        'only_init' : False
+        'only_init' : False,
+	'nIter' : nIter_patch        # number of refinement iterations
     }
     
     options['preprocess_params'] = {'sn': None,                  # noise level for each pixel

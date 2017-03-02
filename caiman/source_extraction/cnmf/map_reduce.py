@@ -94,28 +94,35 @@ def cnmf_patches(args_in):
 
             logger.info('Spatial Update')                                                      
             A,b,Cin = cm.source_extraction.cnmf.spatial.update_spatial_components(Yr, Cin, f_in, Ain, sn=sn, **options['spatial_params'])  
+            
             options['temporal_params']['p'] = 0 # set this to zero for fast updating without deconvolution
             
-
-            logger.info('Temporal Update')  
+            logger.info('Temporal Update') 
             C,f,S,bl,c1,neurons_sn,g,YrA = cm.source_extraction.cnmf.temporal.update_temporal_components(Yr,A,b,Cin,f_in,bl=None,c1=None,sn=None,g=None,**options['temporal_params'])
+            
+            options['temporal_params']['p'] = p # set it back to original value to perform full deconvolution
 
             logger.info('Merge Components') 
-            A_m,C_m,nr_m,merged_ROIs,S_m,bl_m,c1_m,sn_m,g_m=cm.source_extraction.cnmf.merging.merge_components(Yr,A,b,C,f,S,sn,options['temporal_params'], options['spatial_params'], bl=bl, c1=c1, sn=neurons_sn, g=g, thr=options['merging']['thr'], fast_merge = True)
+            A, C, nr, merged_ROIs, S, bl, c1, neurons_sn, g = cm.source_extraction.cnmf.merging.merge_components(Yr,A,b,C,f,S,sn,options['temporal_params'], options['spatial_params'], bl=bl, c1=c1, sn=neurons_sn, g=g, thr=options['merging']['thr'], fast_merge = True)
 
-            logger.info('Update Spatial II')
-            A2,b2,C2 = cm.source_extraction.cnmf.spatial.update_spatial_components(Yr, C_m, f, A_m, sn=sn, **options['spatial_params'])
+            for it in range(options['patch_params']['nIter']):
+ 
+                logger.info('Starting Iteration ' + str(it)) 
 
-            logger.info('Update Temporal II')                                                       
-            options['temporal_params']['p'] = p # set it back to original value to perform full deconvolution
-            C2,f2,S2,bl2,c12,neurons_sn2,g21,YrA = cm.source_extraction.cnmf.temporal.update_temporal_components(Yr,A2,b2,C2,f,bl=None,c1=None,sn=None,g=None,**options['temporal_params'])
-
-
+                # spatial update
+                A, b, C = cm.source_extraction.cnmf.spatial.update_spatial_components(Yr, C, f, A, sn=sn, **options['spatial_params'])
+                
+                # temporal update
+                C, f, S, bl, c1, neurons_sn, g, YrA = cm.source_extraction.cnmf.temporal.update_temporal_components(Yr,A,b,C,f,bl=None,c1=None,sn=None,g=None,**options['temporal_params'])
+                
+                # merge
+                A, C, nr, merged_ROIs, S, bl, c1, neurons_sn, g = cm.source_extraction.cnmf.merging.merge_components(Yr,A,b,C,f,S,sn,options['temporal_params'], options['spatial_params'], bl=bl, c1=c1, sn=neurons_sn, g=g, thr=options['merging']['thr'], mx=50, fast_merge = True)            
+            
             Y=[]
             Yr=[]
 
             logger.info('Done!')
-            return idx_,shapes,A2,b2,C2,f2,S2,bl2,c12,neurons_sn2,g21,sn,options,YrA
+            return idx_,shapes,A,b,C,f,S,bl,c1,neurons_sn,g,sn,options,YrA
 
     else:
         return None                
@@ -208,11 +215,10 @@ def run_CNMF_patches(file_name, shape, options, rf=16, stride = 4, gnb = 1, dvie
             dview.results.clear()   
 
         except:
-            print('Something went wrong')  
+            print('Something went wrong') 
+            e = sys.exc_info()[0]
+            print(e) 
             raise
-        finally:
-            print('You may think that it went well but reality is harsh')
-
 
     else:
 
